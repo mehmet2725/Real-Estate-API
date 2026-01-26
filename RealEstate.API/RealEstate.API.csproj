@@ -13,12 +13,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\RealEstate.Data\RealEstate.Data.csproj" />
     <ProjectReference Include="..\RealEstate.Entity\RealEstate.Entity.csproj" />
     <ProjectReference Include="..\RealEstate.Business\RealEstate.Business.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

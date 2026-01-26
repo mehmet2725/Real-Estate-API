@@ -36,7 +36,7 @@ public class PropertyManager : IPropertyService
         await _propertyRepo.AddAsync(property);
 
         // 4. Save the database(commit);
-
+        await _unitOfWork.CommitAsync();
         return property;
     }
 

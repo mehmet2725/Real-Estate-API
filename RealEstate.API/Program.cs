@@ -34,14 +34,16 @@ builder.Services.AddScoped<IPropertyService, PropertyManager>();
 builder.Services.AddControllers();
 
 // 4. Swagger/OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer(); // Endpoint'leri keşfet
+builder.Services.AddSwaggerGen();           // Swagger jeneratörünü ekle
 
 var app = builder.Build();
 
 // Pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); // Created swagger JSON
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

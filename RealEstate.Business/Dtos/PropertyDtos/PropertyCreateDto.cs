@@ -21,8 +21,11 @@ public class PropertyCreateDto
     public int? TotalFloors { get; set; }
     public int YearBuilt { get; set; }
 
-    // Relationships
-    public int PropertyId { get; set; }
+    // Status 
+    public string Status { get; set; } = "Satılık";
+
+    // Relationship
+    public int PropertyTypeId { get; set; }
 
     // Emlakçıyı (AgentId) elle almayacağız, token'dan (giriş yapan kullanıcıdan) çekeceğiz.
     // O yüzden buraya koymuyoruz.
