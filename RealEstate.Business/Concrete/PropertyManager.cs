@@ -42,6 +42,35 @@ public class PropertyManager : IPropertyService
 
     public async Task<List<Property>> GetAllAsync()
     {
-        return await _propertyRepo.GetAllAsync();
+        // Veritabanındaki tüm evleri al
+        var allProperties = await _propertyRepo.GetAllAsync();
+
+        // Sadece IsDeleted = false (Silinmemiş) olanları filtrele
+        return allProperties.Where(p => p.IsDeleted == false).ToList();
+    }
+
+    public async Task UpdateAsync(PropertyUpdateDto updateDto)
+    {
+        var property = await _propertyRepo.GetByIdAsync(updateDto.Id);
+
+        if (property == null) return; // Kayıt yoksa çık
+
+        // (updateDto içindeki verileri al, property'nin içine göm)
+        _mapper.Map(updateDto, property);
+
+        //  Kaydet
+        _propertyRepo.Update(property);
+        await _unitOfWork.CommitAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var property = await _propertyRepo.GetByIdAsync(id);
+
+        if (property == null) return;
+
+        // SOFT DELETE
+        property.IsDeleted = true;
+        await _unitOfWork.CommitAsync();
     }
 }

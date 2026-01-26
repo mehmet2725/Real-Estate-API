@@ -14,4 +14,10 @@ public interface IPropertyService
     // all advert list
     // İleride buraya PropertyListDto gelecek ama şimdilik Entity dönelim, yapıyı kuralım.
     Task<List<Property>> GetAllAsync();
+
+    // Update
+    Task UpdateAsync(PropertyUpdateDto updateDto);
+
+    // Delete
+    Task DeleteAsync(int id);
 }

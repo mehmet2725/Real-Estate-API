@@ -39,4 +39,22 @@ public class PropertiesController : ControllerBase
         // return 201 Created
         return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
     }
-}
+
+    // Update
+    [HttpPut]
+    public async Task<IActionResult> Update(PropertyUpdateDto updateDto)
+    {
+        await _propertyService.UpdateAsync(updateDto);
+        // 200 OK
+        return Ok(new { message = "İlan Başarıyla Güncellendi", id = updateDto.Id });
+    }
+
+
+    // Delete
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _propertyService.DeleteAsync(id);
+        return Ok(new { message = "İlan Başarıyla Silindi(Soft Delete)" });
+    }
+ }

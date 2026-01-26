@@ -8,12 +8,10 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        // PropertyCreateDto -> Property 
-        CreateMap<PropertyCreateDto, Property>();
+        // PropertyCreateDto <-> Property 
+        CreateMap<PropertyCreateDto, Property>().ReverseMap();
 
-        // Property -> PropertyCreateDto
-        CreateMap<Property, PropertyCreateDto>();
-
-        //PropertyUpdateDto and PropertyListDto will be added here in the future.
+        // PropertyUpdateDto <-> Property 
+        CreateMap<PropertyUpdateDto, Property>().ReverseMap();
     }
 }
