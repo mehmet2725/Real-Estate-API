@@ -18,6 +18,7 @@
   <ItemGroup>
     <Folder Include="Concrete\" />
     <Folder Include="Dtos\" />
+    <Folder Include="Dtos\AuthDtos\" />
     <Folder Include="Dtos\PropertyDtos\" />
     <Folder Include="Dtos\PropertyImageDtos\" />
     <Folder Include="Profiles\" />

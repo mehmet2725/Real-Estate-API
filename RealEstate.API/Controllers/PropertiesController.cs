@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealEstate.Business.Abstract;
 using RealEstate.Business.Dtos.PropertyDtos;
@@ -11,7 +12,6 @@ public class PropertiesController : ControllerBase
 {
     private readonly IPropertyService _propertyService;
 
-    // Constructor Injection
     public PropertiesController(IPropertyService propertyService)
     {
         _propertyService = propertyService;
@@ -21,40 +21,45 @@ public class PropertiesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var properties = await _propertyService.GetAllAsync();
-        return Ok(properties); // 200 OK
+        var values = await _propertyService.GetAllAsync();
+        return Ok(values);
     }
 
-    // POST: api/properties?agentId=1
-    // Normally, the agentId is obtained from the token, but for now we are getting it from a parameter.
+    // POST: api/properties
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] PropertyCreateDto createDto, [FromQuery] int agentId)
     {
-        // a simple validation
-        if(agentId <= 0)
-        return BadRequest("Geçerli bir Agen ID giriniz");
+        if (agentId <= 0)
+            return BadRequest("Geçerli bir Agent ID giriniz");
 
         var result = await _propertyService.AddAsync(createDto, agentId);
 
-        // return 201 Created
         return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
     }
 
-    // Update
-    [HttpPut]
-    public async Task<IActionResult> Update(PropertyUpdateDto updateDto)
+    // 🔥 DÜZELTİLEN KISIM BURASI (UPDATE) 🔥
+    // Artık ID'yi URL'den zorunlu istiyoruz [HttpPut("{id}")]
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] PropertyUpdateDto updateDto)
     {
+        // Güvenlik kontrolü: URL'deki ID ile Kutu içindeki ID aynı mı?
+        if (id != updateDto.Id)
+        {
+            return BadRequest("URL'deki ID ile gönderilen verideki ID uyuşmuyor! İkisini de aynı gir.");
+        }
+
         await _propertyService.UpdateAsync(updateDto);
-        // 200 OK
         return Ok(new { message = "İlan Başarıyla Güncellendi", id = updateDto.Id });
     }
 
-
-    // Delete
+    // DELETE: api/properties/5
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _propertyService.DeleteAsync(id);
         return Ok(new { message = "İlan Başarıyla Silindi(Soft Delete)" });
     }
- }
+}

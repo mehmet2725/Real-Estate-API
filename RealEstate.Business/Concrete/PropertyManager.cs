@@ -40,14 +40,18 @@ public class PropertyManager : IPropertyService
         return property;
     }
 
-    public async Task<List<Property>> GetAllAsync()
+    public async Task<List<PropertyListDto>> GetAllAsync()
     {
-        // Parantez içine, Property entity'sinde hangi ilişkileri çekmek istiyorsak
-        // onların ismini "String" olarak yazıyoruz.
-        var allProperties = await _propertyRepo.GetAllAsync("Images", "PropertyType");
+        // Veritabanını çek
+        var properties = await _propertyRepo.GetAllAsync("Images", "PropertyType");
 
-        // Filtreleme aynen kalıyor (Silinmemişleri getir)
-        return allProperties.Where(p => p.IsDeleted == false).ToList();
+        // Sadece silinmeyenleri göster
+        var activeProperties = properties.Where(x => x.IsDeleted == false).ToList();
+
+        // Entity -> Dto (AutoMapper)
+        var propertyDtos = _mapper.Map<List<PropertyListDto>>(activeProperties);
+
+        return propertyDtos;
     }
 
     public async Task UpdateAsync(PropertyUpdateDto updateDto)
