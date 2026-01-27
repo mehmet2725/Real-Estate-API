@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RealEstate.Data\RealEstate.Data.csproj" />
     <ProjectReference Include="..\RealEstate.Entity\RealEstate.Entity.csproj" />
   </ItemGroup>
@@ -15,6 +19,7 @@
     <Folder Include="Concrete\" />
     <Folder Include="Dtos\" />
     <Folder Include="Dtos\PropertyDtos\" />
+    <Folder Include="Dtos\PropertyImageDtos\" />
     <Folder Include="Profiles\" />
   </ItemGroup>
 

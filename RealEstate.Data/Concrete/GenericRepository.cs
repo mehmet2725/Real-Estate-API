@@ -31,10 +31,26 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseClass
         return await _dbSet.AnyAsync(expression);
     }
 
-    public async Task<List<T>> GetAllAsync()
+    // public async Task<List<T>> GetAllAsync()
+    // {
+    //     // AsNoTracking: It only improves performance when we are reading.
+    //     return await _dbSet.AsNoTracking().ToListAsync();
+    // }
+    public async Task<List<T>> GetAllAsync(params string[] includes)
     {
-        // AsNoTracking: It only improves performance when we are reading.
-        return await _dbSet.AsNoTracking().ToListAsync();
+        // Veritabanı setini sorgulanabilir hale getir
+        IQueryable<T> query = _context.Set<T>();
+
+        // Eğer "Şunu da dahil et" dediysek, döngüyle ekle
+        if (includes != null)
+        {
+            foreach (var includeItem in includes)
+            {
+                query = query.Include(includeItem);
+            }
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<T?> GetByIdAsync(int id)

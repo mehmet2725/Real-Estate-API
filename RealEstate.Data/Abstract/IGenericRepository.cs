@@ -13,7 +13,8 @@ public interface IGenericRepository<T> where T : BaseClass
     Task<T?> GetByIdAsync(int id);
 
     // Bring all
-    Task<List<T>> GetAllAsync();
+    // Task<List<T>> GetAllAsync();
+    Task<List<T>> GetAllAsync(params string[] includes);
 
     // Retrieve based on filter.
     // We return an IQueryable so that the query doesn't run immediately, but we can add to it later.

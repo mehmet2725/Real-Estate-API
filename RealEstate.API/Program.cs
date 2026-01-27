@@ -7,15 +7,16 @@ using RealEstate.Entity.Abstract;
 using RealEstate.Business.Abstract;
 using RealEstate.Business.Concrete;
 using RealEstate.Data.Abstract;
+using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Connection(PostgreSQL)
+//  Database Connection(PostgreSQL)
 builder.Services.AddDbContext<RealEstateDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Identity(User Managment)
+//  Identity(User Managment)
 builder.Services.AddIdentity<AppUser, AppRole>()
     .AddEntityFrameworkStores<RealEstateDbContext>();
 
@@ -30,10 +31,15 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // --- Services (Business) ---
 builder.Services.AddScoped<IPropertyService, PropertyManager>();
 
-// 3. Controller System
-builder.Services.AddControllers();
+builder.Services.AddScoped<IPropertyImageService, PropertyImageManager>();
 
-// 4. Swagger/OpenAPI
+//  Controller System
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
+//  Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer(); // Endpoint'leri keşfet
 builder.Services.AddSwaggerGen();           // Swagger jeneratörünü ekle
 

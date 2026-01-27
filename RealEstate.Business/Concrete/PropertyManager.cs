@@ -42,10 +42,11 @@ public class PropertyManager : IPropertyService
 
     public async Task<List<Property>> GetAllAsync()
     {
-        // Veritabanındaki tüm evleri al
-        var allProperties = await _propertyRepo.GetAllAsync();
+        // Parantez içine, Property entity'sinde hangi ilişkileri çekmek istiyorsak
+        // onların ismini "String" olarak yazıyoruz.
+        var allProperties = await _propertyRepo.GetAllAsync("Images", "PropertyType");
 
-        // Sadece IsDeleted = false (Silinmemiş) olanları filtrele
+        // Filtreleme aynen kalıyor (Silinmemişleri getir)
         return allProperties.Where(p => p.IsDeleted == false).ToList();
     }
 
