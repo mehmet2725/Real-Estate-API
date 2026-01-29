@@ -33,6 +33,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPropertyService, PropertyManager>();
 builder.Services.AddScoped<IPropertyImageService, PropertyImageManager>();
 
+builder.Services.AddScoped<IPropertyTypeService, PropertyTypeManager>();
+
 // JWT TOKEN AYARLARI 
 builder.Services.AddAuthentication(options =>
 {

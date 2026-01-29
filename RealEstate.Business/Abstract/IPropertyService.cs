@@ -19,4 +19,7 @@ public interface IPropertyService
 
     // Delete
     Task DeleteAsync(int id);
+
+    // Filter
+    Task<List<PropertyListDto>> GetFilteredListAsync(PropertyFilterParams filters);
 }

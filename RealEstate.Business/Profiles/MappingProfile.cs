@@ -2,6 +2,7 @@ using AutoMapper;
 using RealEstate.Business.Dtos.PropertyDtos;
 using RealEstate.Business.Dtos.PropertyImageDtos;
 using RealEstate.Entity.Concrete;
+using RealEstate.Business.Dtos.PropertyTypeDtos;
 
 namespace RealEstate.Business.Profiles;
 
@@ -25,5 +26,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PropertyTypeName, opt => opt.MapFrom(src => src.PropertyType.Name))
             // resimler otomatik olarak eşleştir
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
+
+        // propType eşleştirmeleri
+        CreateMap<PropertyType, PropertyTypeDto>().ReverseMap();
+        CreateMap<PropertyType, PropertyTypeCreateDto>().ReverseMap();
+        CreateMap<PropertyType, PropertyTypeUpdateDto>().ReverseMap();
     }
 }

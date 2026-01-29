@@ -78,4 +78,59 @@ public class PropertyManager : IPropertyService
         property.IsDeleted = true;
         await _unitOfWork.CommitAsync();
     }
+
+    public async Task<List<PropertyListDto>> GetFilteredListAsync(PropertyFilterParams filters)
+    {
+        // 1. Tüm İlanları İlişkileriyle (Resim, Tip) Çek
+        // (Şimdilik Business katmanında EF Core olmadığı için veriyi RAM'e çekip filtreliyoruz. 
+        // Veri sayısı azken bu en güvenli ve hatasız yöntemdir.)
+        var allProperties = await _propertyRepo.GetAllAsync("Images", "PropertyType");
+
+        // 2. Silinmişleri baştan ele
+        var query = allProperties.Where(x => !x.IsDeleted).AsQueryable();
+
+        // 3. Filtreleri Tek Tek Uygula
+        if (!string.IsNullOrEmpty(filters.City))
+            query = query.Where(x => x.City.ToLower().Contains(filters.City.ToLower()));
+
+        if (!string.IsNullOrEmpty(filters.District))
+            query = query.Where(x => x.District.ToLower().Contains(filters.District.ToLower()));
+
+        if (filters.MinPrice.HasValue)
+            query = query.Where(x => x.Price >= filters.MinPrice.Value);
+
+        if (filters.MaxPrice.HasValue)
+            query = query.Where(x => x.Price <= filters.MaxPrice.Value);
+
+        if (filters.MinRooms.HasValue)
+            query = query.Where(x => x.Rooms >= filters.MinRooms.Value);
+
+        if (filters.MaxRooms.HasValue)
+            query = query.Where(x => x.Rooms <= filters.MaxRooms.Value);
+
+        if (filters.PropertyTypeId.HasValue)
+            query = query.Where(x => x.PropertyTypeId == filters.PropertyTypeId.Value);
+
+        if (!string.IsNullOrEmpty(filters.SearchKeyword))
+            query = query.Where(x => x.Title.ToLower().Contains(filters.SearchKeyword.ToLower()) ||
+                                     x.Description.ToLower().Contains(filters.SearchKeyword.ToLower()));
+
+        // 4. Sıralama (Switch Expression ile pratik çözüm)
+        query = filters.SortBy.ToLower() switch
+        {
+            "price" => filters.SortOrder == "asc" ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price),
+            "rooms" => filters.SortOrder == "asc" ? query.OrderBy(x => x.Rooms) : query.OrderByDescending(x => x.Rooms),
+            "area" => filters.SortOrder == "asc" ? query.OrderBy(x => x.Area) : query.OrderByDescending(x => x.Area),
+            _ => filters.SortOrder == "asc" ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt)
+        };
+
+        // 5. Sayfalama (Pagination)
+        var pagedList = query
+            .Skip((filters.PageNumber - 1) * filters.PageSize)
+            .Take(filters.PageSize)
+            .ToList();
+
+        // 6. DTO'ya Çevir ve Gönder
+        return _mapper.Map<List<PropertyListDto>>(pagedList);
+    }
 }

@@ -21,6 +21,7 @@
     <Folder Include="Dtos\AuthDtos\" />
     <Folder Include="Dtos\PropertyDtos\" />
     <Folder Include="Dtos\PropertyImageDtos\" />
+    <Folder Include="Dtos\PropertyTypeDtos\" />
     <Folder Include="Profiles\" />
   </ItemGroup>
 

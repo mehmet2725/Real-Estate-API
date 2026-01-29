@@ -62,4 +62,13 @@ public class PropertiesController : ControllerBase
         await _propertyService.DeleteAsync(id);
         return Ok(new { message = "İlan Başarıyla Silindi(Soft Delete)" });
     }
+
+    // Filter
+    // GET: api/properties/search?city=Ankara&minPrice=5000&pageNumber=1
+    [HttpGet("search")]
+    public async Task<IActionResult> GetFiltered([FromQuery] PropertyFilterParams filters)
+    {
+        var values = await _propertyService.GetFilteredListAsync(filters);
+        return Ok(values);
+    }
 }

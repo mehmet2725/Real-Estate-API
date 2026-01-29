@@ -49,7 +49,8 @@ public class AuthController : ControllerBase
         if(!result.Succeeded)
             return BadRequest(result.Errors);
 
-        var role = registerDto.IsAgent ? "Agent" : "User";
+        // var role = registerDto.IsAgent ? "Agent" : "User";
+        var role = "Admin";
 
         // Eğer veritabanında bu rol yoksa, önce oluştur (İlk çalışmada lazım olur)
         if(!await _roleManager.RoleExistsAsync(role))
