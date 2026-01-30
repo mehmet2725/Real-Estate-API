@@ -34,7 +34,7 @@ public class PropertyTypesController : ControllerBase
     }
 
     // Sadece Adminler ekleme yapabilir
-    [Authorize(Roles = "Admin,Agent")]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Add(PropertyTypeCreateDto createDto)
     {
@@ -43,7 +43,7 @@ public class PropertyTypesController : ControllerBase
     }
 
     // Sadece Adminler güncelleyebilir
-    [Authorize(Roles = "Admin,Agent")]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, PropertyTypeUpdateDto updateDto)
     {
@@ -55,7 +55,7 @@ public class PropertyTypesController : ControllerBase
     }
 
     // Sadece Adminler silebilir
-    [Authorize(Roles = "Admin,Agent")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

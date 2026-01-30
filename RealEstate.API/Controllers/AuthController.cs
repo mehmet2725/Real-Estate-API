@@ -33,33 +33,31 @@ public class AuthController : ControllerBase
         if (userExists != null)
             return BadRequest("Bu kullanıcı adı kullanımda");
 
-        // kullanıcı nesnesini olutşturalım
+        // 1. Kullanıcı nesnesini oluştur
         var user = new AppUser
         {
+            UserName = registerDto.UserName,
+            Email = registerDto.Email,
             FirstName = registerDto.FirstName,
             LastName = registerDto.LastName,
-            UserName =registerDto.UserName,
-            Email = registerDto.Email,
-            IsAgent = registerDto.IsAgent // emlakçı mı olmak istiyor
+            IsAgent = registerDto.IsAgent // Emlakçı mı?
         };
 
-        // veritabanına kaydet
+        // 2. Kullanıcıyı kaydet (Şifreyi hashle)
         var result = await _userManager.CreateAsync(user, registerDto.Password);
 
-        if(!result.Succeeded)
-            return BadRequest(result.Errors);
+        if (result.Succeeded)
+        {
 
-        // var role = registerDto.IsAgent ? "Agent" : "User";
-        var role = "Admin";
+            var role = registerDto.IsAgent ? "Agent" : "User";
 
-        // Eğer veritabanında bu rol yoksa, önce oluştur (İlk çalışmada lazım olur)
-        if(!await _roleManager.RoleExistsAsync(role))
-            await _roleManager.CreateAsync(new AppRole { Name = role });
+            // Rolü veritabanına işle
+            await _userManager.AddToRoleAsync(user, role);
 
-        // kullanıcıya rolü ver
-        await _userManager.AddToRoleAsync(user, role);
+            return StatusCode(201, new { message = "Kullanıcı başarıyla oluşturuldu" });
+        }
 
-        return StatusCode(201, new { message = "Kullanıcı başarıyla oluşturuldu" });
+        return BadRequest(result.Errors);
     }
 
     // LOGIN
@@ -68,15 +66,15 @@ public class AuthController : ControllerBase
     {
         // Kullanıcıyı bul 
         var user = await _userManager.FindByNameAsync(loginDto.UserNameOrEmail);
-        if(user == null)
+        if (user == null)
             user = await _userManager.FindByEmailAsync(loginDto.UserNameOrEmail);
 
-        if(user == null)
+        if (user == null)
             return Unauthorized("Kullanıcı adı bulunamadı");
 
         // Şifreyi kontrol et
-        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password,false);
-        if(!result.Succeeded)
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded)
             return Unauthorized("Hatalı şifre");
 
         // rolünü bul

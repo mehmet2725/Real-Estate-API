@@ -19,14 +19,17 @@
     <Folder Include="Concrete\" />
     <Folder Include="Dtos\" />
     <Folder Include="Dtos\AuthDtos\" />
+    <Folder Include="Dtos\InquiryDtos\" />
     <Folder Include="Dtos\PropertyDtos\" />
     <Folder Include="Dtos\PropertyImageDtos\" />
     <Folder Include="Dtos\PropertyTypeDtos\" />
     <Folder Include="Profiles\" />
+    <Folder Include="ValidationRules\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,8 @@ using RealEstate.Business.Dtos.PropertyDtos;
 using RealEstate.Business.Dtos.PropertyImageDtos;
 using RealEstate.Entity.Concrete;
 using RealEstate.Business.Dtos.PropertyTypeDtos;
+using RealEstate.Business.Dtos.InquiryDtos;
+
 
 namespace RealEstate.Business.Profiles;
 
@@ -31,5 +33,12 @@ public class MappingProfile : Profile
         CreateMap<PropertyType, PropertyTypeDto>().ReverseMap();
         CreateMap<PropertyType, PropertyTypeCreateDto>().ReverseMap();
         CreateMap<PropertyType, PropertyTypeUpdateDto>().ReverseMap();
+
+        // Inquiry (Mesajlaşma)
+        CreateMap<InquiryCreateDto, Inquiry>();
+        CreateMap<InquiryUpdateDto, Inquiry>();
+        CreateMap<Inquiry, InquiryDto>()
+            // Mesajın ait olduğu ilanın başlığını da DTO'ya taşıyalım
+            .ForMember(dest => dest.PropertyTitle, opt => opt.MapFrom(src => src.Property.Title));
     }
 }

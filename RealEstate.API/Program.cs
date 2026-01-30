@@ -9,8 +9,10 @@ using RealEstate.Data.Abstract;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models; 
+using Microsoft.OpenApi.Models;
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,8 @@ builder.Services.AddScoped<IPropertyImageService, PropertyImageManager>();
 
 builder.Services.AddScoped<IPropertyTypeService, PropertyTypeManager>();
 
+builder.Services.AddScoped<IInquiryService, InquiryManager>();
+
 // JWT TOKEN AYARLARI 
 builder.Services.AddAuthentication(options =>
 {
@@ -58,11 +62,21 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-//  Controller System
-builder.Services.AddControllers().AddJsonOptions(x =>
+// 1. Controller Sistemi
+builder.Services.AddControllers()
+    .AddJsonOptions(x =>
+    {
+        x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
+// 2. FluentValidation Modern Entegrasyon
+builder.Services.AddFluentValidationAutoValidation(config =>
 {
-    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    config.DisableDataAnnotationsValidation = true;
 });
+
+// Validator'ları Business katmanından bul ve sisteme yükle
+builder.Services.AddValidatorsFromAssemblyContaining<RealEstate.Business.ValidationRules.PropertyCreateValidator>();
 
 // SWAGGER KİLİT BUTONU AYARLARI 
 builder.Services.AddEndpointsApiExplorer();
@@ -113,5 +127,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Uygulama ayağa kalkarken Admin kullanıcısı var mı kontrol et
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Yazdığımız SeedData sınıfını çalıştır
+        await RealEstate.API.Tools.SeedData.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Admin kullanıcısı oluşturulurken hata çıktı.");
+    }
+}
 
 app.Run();

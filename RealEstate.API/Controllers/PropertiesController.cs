@@ -26,7 +26,7 @@ public class PropertiesController : ControllerBase
     }
 
     // POST: api/properties
-    [Authorize]
+    [Authorize(Roles = "Admin,Agent")]
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] PropertyCreateDto createDto, [FromQuery] int agentId)
     {
@@ -38,9 +38,8 @@ public class PropertiesController : ControllerBase
         return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
     }
 
-    // 🔥 DÜZELTİLEN KISIM BURASI (UPDATE) 🔥
     // Artık ID'yi URL'den zorunlu istiyoruz [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Agent")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] PropertyUpdateDto updateDto)
     {
@@ -55,7 +54,7 @@ public class PropertiesController : ControllerBase
     }
 
     // DELETE: api/properties/5
-    [Authorize]
+    [Authorize(Roles = "Admin,Agent")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
