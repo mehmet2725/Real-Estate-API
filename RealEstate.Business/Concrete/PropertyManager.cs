@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using RealEstate.Business.Abstract;
 using RealEstate.Business.Dtos.PropertyDtos;
 using RealEstate.Data.Abstract;
 using RealEstate.Entity.Concrete;
+
 
 namespace RealEstate.Business.Concrete;
 
@@ -81,15 +83,15 @@ public class PropertyManager : IPropertyService
 
     public async Task<List<PropertyListDto>> GetFilteredListAsync(PropertyFilterParams filters)
     {
-        // 1. Tüm İlanları İlişkileriyle (Resim, Tip) Çek
-        // (Şimdilik Business katmanında EF Core olmadığı için veriyi RAM'e çekip filtreliyoruz. 
-        // Veri sayısı azken bu en güvenli ve hatasız yöntemdir.)
-        var allProperties = await _propertyRepo.GetAllAsync("Images", "PropertyType");
+        // 1. Veritabanı sorgusunu oluşturuyoruz (Henüz veritabanına gitmedi!)
+        // "Images" ve "PropertyType" tablolarını da joinliyoruz.
+        var query = _propertyRepo.GetQuery("Images", "PropertyType");
 
         // 2. Silinmişleri baştan ele
-        var query = allProperties.Where(x => !x.IsDeleted).AsQueryable();
+        query = query.Where(x => !x.IsDeleted);
 
-        // 3. Filtreleri Tek Tek Uygula
+        // 3. Filtreleri SQL sorgusuna ekle (Hala veritabanına gitmedi, sadece sorgu birikiyor)
+
         if (!string.IsNullOrEmpty(filters.City))
             query = query.Where(x => x.City.ToLower().Contains(filters.City.ToLower()));
 
@@ -115,7 +117,7 @@ public class PropertyManager : IPropertyService
             query = query.Where(x => x.Title.ToLower().Contains(filters.SearchKeyword.ToLower()) ||
                                      x.Description.ToLower().Contains(filters.SearchKeyword.ToLower()));
 
-        // 4. Sıralama (Switch Expression ile pratik çözüm)
+        // 4. Sıralama
         query = filters.SortBy.ToLower() switch
         {
             "price" => filters.SortOrder == "asc" ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price),
@@ -125,12 +127,15 @@ public class PropertyManager : IPropertyService
         };
 
         // 5. Sayfalama (Pagination)
-        var pagedList = query
+        // Önce skip ve take işlemlerini sorguya ekle
+        var pagedQuery = query
             .Skip((filters.PageNumber - 1) * filters.PageSize)
-            .Take(filters.PageSize)
-            .ToList();
+            .Take(filters.PageSize);
 
-        // 6. DTO'ya Çevir ve Gönder
-        return _mapper.Map<List<PropertyListDto>>(pagedList);
+        // 6. FİNAL: Veritabanına git ve sadece ihtiyacın olan veriyi çek!
+        var resultList = await pagedQuery.ToListAsync();
+
+        // 7. DTO'ya Çevir ve Gönder
+        return _mapper.Map<List<PropertyListDto>>(resultList);
     }
 }
