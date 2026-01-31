@@ -72,4 +72,18 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseClass
     {
         return _dbSet.Where(expression);
     }
+
+
+    public IQueryable<T> GetQuery(params string[] includes)
+{
+    var query = _dbSet.AsQueryable();
+    if (includes != null)
+    {
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+    }
+    return query;
+}
 }

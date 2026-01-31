@@ -13,6 +13,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using System.Threading.RateLimiting; // Rate Limit için gerekli
+using Microsoft.AspNetCore.RateLimiting; // Rate Limit için gerekli
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,10 +36,22 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 //  Services (Business)
 builder.Services.AddScoped<IPropertyService, PropertyManager>();
 builder.Services.AddScoped<IPropertyImageService, PropertyImageManager>();
-
 builder.Services.AddScoped<IPropertyTypeService, PropertyTypeManager>();
-
 builder.Services.AddScoped<IInquiryService, InquiryManager>();
+
+// RATE LIMITING AYARLARI (Dakikada 60 İstek)
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("Fixed", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 60;
+        opt.QueueLimit = 5;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // JWT TOKEN AYARLARI 
 builder.Services.AddAuthentication(options =>
@@ -113,20 +127,33 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Pipeline
+// --- PIPELINE (SIRALAMA ÖNEMLİDİR) ---
+
+// 1. Global Exception Handling (En Dış Katman)
+app.UseMiddleware<RealEstate.API.Middlewares.GlobalExceptionMiddleware>();
+
+// 2. Security Headers (Güvenlik Başlıkları)
+app.UseMiddleware<RealEstate.API.Middlewares.SecurityHeadersMiddleware>();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+
 }
 
 app.UseHttpsRedirection();
 
-//  Authentication -> Authorization
+// 3. Rate Limiter (Kimlik doğrulamadan önce çalışması iyidir)
+app.UseRateLimiter();
+
+// 4. Authentication -> Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+// Rate Limiting'i controllerlara uygula ("Fixed" politikasını kullan)
+app.MapControllers().RequireRateLimiting("Fixed");
 
 // Uygulama ayağa kalkarken Admin kullanıcısı var mı kontrol et
 using (var scope = app.Services.CreateScope())

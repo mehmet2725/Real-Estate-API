@@ -31,4 +31,6 @@ public interface IGenericRepository<T> where T : BaseClass
 
     // Update
     void Update(T Entity);
+
+    IQueryable<T> GetQuery(params string[] includes);
 }

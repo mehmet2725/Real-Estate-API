@@ -1,4 +1,5 @@
 services:
+  # 1. Veritabanı Servisi
   db:
     image: postgres:15-alpine
     container_name: realestate_db
@@ -7,9 +8,28 @@ services:
       - POSTGRES_PASSWORD=sifreniz
       - POSTGRES_DB=RealEstateDb
     ports:
-      - "5433:5432"
+      - "5433:5432" # Dışarıdan 5433 ile erişilir 
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # 2. API Servisi
+  api:
+    build: .
+    container_name: realestate_api
+    depends_on:
+      - db # DB açılmadan API açılmasın
+    ports:
+      - "5070:8080" # http://localhost:5070
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=RealEstateDb;Username=postgres;Password=sifreniz
+      - ASPNETCORE_ENVIRONMENT=Production
+      # JWT Ayarları
+      - JwtSettings__Secret=bu_cok_gizli_ve_uzun_bir_sifre_olmali_en_az_32_karakter_salla_gitsin
+      - JwtSettings__Issuer=RealEstate_API
+      - JwtSettings__Audience=RealEstate_Client
+      - JwtSettings__ExpirationMinutes=60
+    restart: on-failure
 
 volumes:
   postgres_data:
