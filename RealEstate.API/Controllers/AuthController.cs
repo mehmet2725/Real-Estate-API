@@ -81,9 +81,44 @@ public class AuthController : ControllerBase
         var userRoles = await _userManager.GetRolesAsync(user);
         var role = userRoles.FirstOrDefault() ?? "User";
 
-        // Token Üret
-        var token = JwtTokenGenerator.GenerateToken(user, role, _configuration);
+        //  Token Üret
+        var accessToken = JwtTokenGenerator.GenerateToken(user, role, _configuration);
+        var refreshToken = JwtTokenGenerator.GenerateRefreshToken();
 
-        return Ok(new { token = token });
+        //  Refresh Token'ı veritabanına kaydet
+        user.RefreshToken = refreshToken;
+        // Token ömrü appsettings'den gelebilir ama şimdilik 7 gün verelim
+        user.RefreshTokenEndDate = DateTime.UtcNow.AddDays(7);
+
+        await _userManager.UpdateAsync(user);
+
+        // İkisini birden dön
+        return Ok(new
+        {
+            Token = accessToken,
+            RefreshToken = refreshToken
+        });
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken(string refreshToken) // DTO ile de alabilirsin
+    {
+        var user = _userManager.Users.FirstOrDefault(x => x.RefreshToken == refreshToken);
+
+        if (user == null || user.RefreshTokenEndDate < DateTime.UtcNow)
+            return BadRequest("Geçersiz veya süresi dolmuş Refresh Token");
+
+        // Rolü bul
+        var userRoles = await _userManager.GetRolesAsync(user);
+        var role = userRoles.FirstOrDefault() ?? "User";
+
+        // Yeni Access Token üret
+        var newAccessToken = JwtTokenGenerator.GenerateToken(user, role, _configuration);
+
+        // (Opsiyonel) Refresh Token'ı da yenileyip ömrünü uzatabilirsin (Rotate)
+        // user.RefreshToken = JwtTokenGenerator.GenerateRefreshToken();
+        // await _userManager.UpdateAsync(user);
+
+        return Ok(new { Token = newAccessToken });
     }
 }

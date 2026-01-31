@@ -39,7 +39,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseClass
     public async Task<List<T>> GetAllAsync(params string[] includes)
     {
         // Veritabanı setini sorgulanabilir hale getir
-        IQueryable<T> query = _context.Set<T>();
+        IQueryable<T> query = _context.Set<T>().AsNoTracking();
 
         // Eğer "Şunu da dahil et" dediysek, döngüyle ekle
         if (includes != null)

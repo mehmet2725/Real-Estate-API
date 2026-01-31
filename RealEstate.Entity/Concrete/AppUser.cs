@@ -23,4 +23,7 @@ public class AppUser : IdentityUser<int>
 
     // There are messages sent by a user.
     public ICollection<Inquiry> Inquiries { get; set; } = new List<Inquiry>();
+
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenEndDate { get; set; }
 }

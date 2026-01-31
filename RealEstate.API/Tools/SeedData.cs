@@ -11,7 +11,7 @@ public static class SeedData
         var roleManager = serviceProvider.GetRequiredService<RoleManager<AppRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
 
-        // 1. "Admin" Rolü var mı? Yoksa oluştur.
+        // 1. Rolleri oluştur
         string[] roleNames = { "Admin", "Agent", "User" };
         foreach (var roleName in roleNames)
         {
@@ -21,28 +21,29 @@ public static class SeedData
             }
         }
 
-        // 2. "Admin" Kullanıcısı var mı? Yoksa oluştur.
-        var adminUser = await userManager.FindByNameAsync("admin");
-        if (adminUser == null)
+        // 2. İstenen Kullanıcıları Oluştur
+        // Admin
+        if (await userManager.FindByEmailAsync("admin@test.com") == null)
         {
-            adminUser = new AppUser
-            {
-                FirstName = "System",
-                LastName = "Admin",
-                UserName = "admin",
-                Email = "admin@realestate.com",
-                IsAgent = false,
-                EmailConfirmed = true
-            };
+            var admin = new AppUser { UserName = "admin", Email = "admin@test.com", FirstName = "Admin", LastName = "User", IsAgent = false, EmailConfirmed = true };
+            await userManager.CreateAsync(admin, "Admin123!");
+            await userManager.AddToRoleAsync(admin, "Admin");
+        }
 
-            // Şifresi: Admin123!
-            var result = await userManager.CreateAsync(adminUser, "Admin123!");
-            
-            if (result.Succeeded)
-            {
-                // Ona "Admin" rolünü ver
-                await userManager.AddToRoleAsync(adminUser, "Admin");
-            }
+        // Agent (Emlakçı)
+        if (await userManager.FindByEmailAsync("agent@test.com") == null)
+        {
+            var agent = new AppUser { UserName = "agent", Email = "agent@test.com", FirstName = "Agent", LastName = "User", IsAgent = true, EmailConfirmed = true };
+            await userManager.CreateAsync(agent, "Agent123!");
+            await userManager.AddToRoleAsync(agent, "Agent");
+        }
+
+        // User (Normal Müşteri)
+        if (await userManager.FindByEmailAsync("user@test.com") == null)
+        {
+            var user = new AppUser { UserName = "user", Email = "user@test.com", FirstName = "Normal", LastName = "User", IsAgent = false, EmailConfirmed = true };
+            await userManager.CreateAsync(user, "User123!");
+            await userManager.AddToRoleAsync(user, "User");
         }
     }
 }

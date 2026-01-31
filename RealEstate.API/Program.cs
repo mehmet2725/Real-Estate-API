@@ -13,8 +13,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using System.Threading.RateLimiting; // Rate Limit için gerekli
-using Microsoft.AspNetCore.RateLimiting; // Rate Limit için gerekli
+using System.Threading.RateLimiting; 
+using Microsoft.AspNetCore.RateLimiting; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +38,15 @@ builder.Services.AddScoped<IPropertyService, PropertyManager>();
 builder.Services.AddScoped<IPropertyImageService, PropertyImageManager>();
 builder.Services.AddScoped<IPropertyTypeService, PropertyTypeManager>();
 builder.Services.AddScoped<IInquiryService, InquiryManager>();
+
+//Caching Servisi
+builder.Services.AddMemoryCache();
+
+// Response Compression 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 
 // RATE LIMITING AYARLARI (Dakikada 60 İstek)
 builder.Services.AddRateLimiter(options =>
@@ -127,13 +136,16 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// --- PIPELINE (SIRALAMA ÖNEMLİDİR) ---
+// PIPELINE 
 
-// 1. Global Exception Handling (En Dış Katman)
+// 1. Global Exception Handling 
 app.UseMiddleware<RealEstate.API.Middlewares.GlobalExceptionMiddleware>();
 
-// 2. Security Headers (Güvenlik Başlıkları)
+// 2. Security Headers 
 app.UseMiddleware<RealEstate.API.Middlewares.SecurityHeadersMiddleware>();
+
+// Response Compression Middleware 
+app.UseResponseCompression();
 
 app.UseSwagger();
 app.UseSwaggerUI();
