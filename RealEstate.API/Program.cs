@@ -155,6 +155,8 @@ if (app.Environment.IsDevelopment())
 
 }
 
+app.UseCors("AllowAll");
+
 app.UseHttpsRedirection();
 
 // 3. Rate Limiter (Kimlik doğrulamadan önce çalışması iyidir)
@@ -164,7 +166,9 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Rate Limiting'i controllerlara uygula ("Fixed" politikasını kullan)
+app.MapHealthChecks("/health");
+
+// Rate Limiting'i controllerlara uygula
 app.MapControllers().RequireRateLimiting("Fixed");
 
 // Uygulama ayağa kalkarken Admin kullanıcısı var mı kontrol et
