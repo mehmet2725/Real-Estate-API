@@ -169,16 +169,15 @@ Uygulama ilk kez çalıştırıldığında (Seed Data), veritabanına otomatik o
 
 ---
 
+<div align="center">
+
 ## 👨‍💻 Geliştirici
 
 **Mehmet Sönmez**
 
 GitHub: [@mehmet2725](https://github.com/mehmet2725)
 
+</div>
+
 ---
 
-<div align="center">
-
-Made with ❤️ for .NET Community
-
-</div>
